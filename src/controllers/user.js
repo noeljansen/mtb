@@ -38,7 +38,7 @@ exports.signout = async (req, res) => {
         await req.user.save()
         res.status(200).send()
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send({ error: e.message })
     }
 }
 
@@ -49,7 +49,7 @@ exports.signoutAll = async (req, res) => {
         await req.user.save()
         res.status(200).send()
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send({ error: e.message })
     }
 }
 
@@ -57,7 +57,7 @@ exports.display = async (req, res) => {
     try {
         res.status(200).send(req.user)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({ error: e.message })
     }
 }
 
@@ -86,9 +86,54 @@ exports.update = async (req, res) => {
 
             res.send(req.user)
         } catch (e) {
-            res.status(400).send(e)
+            res.status(400).send({ error: e.message })
         }
 
+    } catch (e) {
+        res.status(500).send({ error: e.message })
+    }
+}
+
+exports.remove = async (req, res) => {
+    try {
+        await req.user.remove()
+        res.status(200).send()
+    } catch (e) {
+        res.status(400).send({ error: e.message })
+    }
+}
+
+// ### Admin Methods ### //
+//Get user information - This is for admins only
+
+exports.getUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user) {
+            return res.status(404).send({ error: 'User does not exist!' })
+        }
+        //Prevent admin from seeing other admins or super admins details
+        if (req.user.level <= user.level) {
+            return res.status(401).send({ error: 'Unauthorised!' })
+        }
+        return res.status(200).send(user)
+    } catch (e) {
+        res.status(500).send({ error: e.message })
+    }
+}
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user) {
+            return res.status(404).send({ error: 'User does not exist!' })
+        }
+        //Prevent admin from seeing other admins or super admins details
+        if (req.user.level <= user.level) {
+            return res.status(401).send({ error: 'Unauthorised!' })
+        }
+        await user.remove()
+        return res.status(200).send()
     } catch (e) {
         res.status(500).send(e)
     }

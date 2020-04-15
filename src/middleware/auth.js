@@ -23,6 +23,13 @@ exports.userAuth = async (req, res, next) => {
     } catch (e) {
         res.status(401).send({ error: 'User not authenticated. Please sign in!' })
     }
+}
 
+exports.isAdmin = (req, res, next) => {
+    if (req.user.level > 0) {
+        next()
+    } else {
+        res.status(401).send({ error: 'User not authorised!' })
+    }
 }
 

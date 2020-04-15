@@ -97,9 +97,10 @@ userSchema.methods.toJSON = function () {
 }
 
 // #### User Static Functions ###
+//Static functions should not be arrow functions
 
 //Authenticate email and password. Return authenticated user
-userSchema.statics.authenticate = async (email, password) => {
+userSchema.statics.authenticate = async function (email, password) {
     const user = await User.findOne({ email })
     if (!user) {
         throw new Error('Email or password incorrect!')
