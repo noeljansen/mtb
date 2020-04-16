@@ -42,7 +42,7 @@ exports.create = async (req, res) => {
             category.path = updatedPath
         }
 
-
+        
 
         await category.save()
         return res.status(201).send(category)

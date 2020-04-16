@@ -35,7 +35,11 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    children: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }]
+    children:
+        /* 
+        This will either be null or an array similar to [[child1,[]], [child2,[]],[child3, [grandchild1]], [child4, [grandchild1, grandchild2]]]
+        */
+        [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }]
 }, {
     timestamps: true
 })
@@ -53,9 +57,63 @@ categorySchema.methods.getChildren = async function () {
 // #### Category Static Methods ### //
 
 /* 
-Update the Children arrays of each category everytime there is a CRUD operation
+Update the Children arrays of each parent everytime there is a CRUD operation
+- This is needed when displaying sub-categories
+- We already have the parent and grandparent of the category
 */
-categorySchema.statics.updateChildren = async function () {
+categorySchema.methods.updateChildren = async function () {
+    const category = this
+    const level = category.path.length
+
+    switch (level) {
+        case 1: // the category has no parent, so there is nothing to update
+            console.log('Case 1')
+            break
+        case 2: // the category only has one parent
+            console.log('Case 2')
+            try {
+                const parent = await Category.findById(category.parent)
+                parent.children.push([category._id])
+                await parent.save()
+            } catch (e) {
+                throw new Error('Could not add child to parent')
+            }
+            break
+        case 3: //the category has a parent, as well as grandparent
+            //First add the child to the parent
+            console.log('Case 3')
+            try {
+                const parent = await Category.findById(category.parent)
+                parent.children.push([category._id])
+                await parent.save()
+            } catch (e) {
+                throw new Error('Could not add child to parent')
+            }
+            //Next, the parent should already be a child in the grandparent
+            try {
+                const grandParent = await Category.findById(parent.parent)
+                grantParent.children.forEach(child => {
+                    if (child[0] == parent._id) {
+                        //If the child already has a grandchildren array, then the category needs to be added to it
+                        if (child.length > 1) {
+                            child[1].push(category._id)
+                        }
+                        //Else the grandchildren array must be created and populated with the first grandchild
+                        else {
+                            child.push([category._id])
+                        }
+                        break
+                    }
+                })
+                await grandParent.save()
+            } catch (e) {
+                throw new Error('Could not update parent in Grandparents children array')
+            }
+
+
+            break
+    }
+
 
 }
 
