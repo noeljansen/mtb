@@ -13,3 +13,4 @@ exports.categoryById = async (req, res, next, id) => {
         res.status(500).send({ error: e.message })
     }
 }
+
