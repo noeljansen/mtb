@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const fs = require('fs')
+const writeJsonFile = require('write-json-file');
 
 const Category = require('../models/category')
 const { toNameString } = require('../utils/strings')
@@ -7,12 +9,8 @@ exports.create = async (req, res) => {
     try {
         const category = new Category(req.body)
 
-        //Store name as Lower Case in path. Remove Space Character from name when putting it in the path and replace with '-' - this is needed for the URLs
-        var pathName = toNameString(category.name)
-
-        category.path.push(pathName)
-
         const parentId = req.body.parent
+
         if (parentId != undefined) {
             //Find and validate parent ID if it is there. Mongoose's validator will make sure it is a valid ObjectID.
             const parentCategory = await Category.findById(parentId)
@@ -21,36 +19,31 @@ exports.create = async (req, res) => {
                     error: 'Parent Category invalid!'
                 })
             }
-            // //Generate path array - The depth of the category is validated in the Category schema. 
-            const updatedPath = parentCategory.path.concat(category.path)
-
-            //Check that path is unique. The unique 'validator / index' did not work for the array
-            const foundArray = await Category.findOne({ path: updatedPath })
-            console.log(`foundArray: ${foundArray}`)
-            if (foundArray) {
+            if (parentCategory.ancestors.length > 2) {
                 return res.status(400).send({
-                    error: `The category ${updatedPath} already exists!`
+                    error: 'Category has to many parents! Categories may only be 3 levels deep!'
                 })
             }
-
-            category.path = updatedPath
         }
 
         await category.save()
         console.log(`Category Created: ${category}`)
 
-        //Need to update Parent Children
-        console.log('About to update Parent Children')
-        await category.updateParentChildren()
+        //update all Category Tree
+        await Category.crudUpdate()
 
-        return res.status(201).send(category)
+        //return updated Category with Tree information
+
+        const updatedCat = await Category.findById(category._id)
+
+        return res.status(201).send(updatedCat)
     } catch (e) {
         res.status(500).send({ error: e.message })
     }
 }
 
 exports.display = async (req, res) => {
-    // This works with different amounts of parameters
+    // This works with different amounts of parameters (1 to 3)
     try {
         //req.params in an array     
         var paramsArray = Object.values(req.params)
@@ -61,201 +54,104 @@ exports.display = async (req, res) => {
         })
 
         //find category based on path
-        const category = await Category.findOne({ path: paramsArray })
+        const category = await Category.findOne({ ancestors: paramsArray })
 
         return res.status(200).send(category)
     } catch (e) {
-
         return res.status(500).send({ error: e.message })
     }
 }
 
-/*
-Modify : To be completed.
-
-Only fields than can be updated by the user are the name and parent.
-- First get the category to updated
-- Then get the new category data (name, parent)
-- If there is a new parent
-    - Make sure that the depth will be 3 or length by concating the path and the longest child path - Need to do this
-- Make sure that there is not an item on the same ancestory level with the same name (or new name) - This will ensure uniquesness of the path and children paths
-- Return any potential conflicts
-
-If that is OK, then start the updating...
-
-- All Parents / Grandparents 's children array needs to be updated
-- All children's / GrandChildrens paths' need to be updated
- 
-
-
-If the above doesn't work, could look at storing it as a 3D array / JSON object
-
-*/
-exports.modify = async (req, res) => {
-
-    // Verfiy the updates that the client is attempting to make
-    const updates = Object.keys(req.body)   //put this in a utils function
-    //Updates the client may make - name, parent
-    const permittedUpdates = ['name', 'parent']
-
-    const isValidUpdate = updates.every((update) => {
-        return permittedUpdates.includes(update)
-    })
-    if (!isValidUpdate) {
-        return res.status(400).send({
-            error: 'Invalid updates!'
-        })
-    }
-
-    //tested
-
+exports.displayById = async (req, res) => {
     try {
-
+        //already has category attached to req due to Middleware
         const category = req.category
-        console.log(`Category to be updated: ${category}`)
-
-        //Check if the name has been updated, if it has then we need to get the new path name
-        const name = req.body.name
-        var pathName = toNameString(category.name)
-        var nameUpdate
-        if ((!name) || (name === category.name)) {
-            nameUpdate = false
-            console.log('Name not updated')
-        } else {
-            nameUpdate = true
-            pathName = toNameString(name)
-            console.log(`Name to be updated to: ${pathName}`)
-        }
-
-        //First check if there is a parent update
-        if (updates.includes('parent')) {
-            const newParentID = req.body.parent
-            console.log(`New Parent ID: ${newParentID}`)
-
-            //Check if there is a parent, or if it is being changed to a high level category, i.e. parent is null
-
-            //The category is a highlevel category, i.e. has no parent:
-            if (!newParentID) {
-                //Only need to check that name is unique
-                console.log('New High Level Category')
-
-                //Use Mongoose Query to find all Categories that have no children
-                const highLevelCategories = await Category.find({ path: { $size: 1 } })
-                console.log(`highLevelCategories: ${highLevelCategories}`)
-
-                highLevelCategories.forEach(cat => {
-                    console.log('High Level Category')
-                    if (cat.path[0] === pathName) {
-                        return res.status(400).send({
-                            error: `Category already exists: '${pathName}'!`
-                        })
-                    }
-                })
-            }
-
-            //tested
-
-            //If there is a parent:
-            else if (newParentID) {
-                //Validate that the parentID exists
-                if (!mongoose.isValidObjectId(newParentID))
-                    return res.status(400).send({
-                        error: 'Invalid Parent Category!'
-                    })
-
-                //Check if the new ParentID is actually the category's id
-                if (newParentID == category._id)
-                    return res.status(400).send({
-                        error: 'Invalid Parent Category. Category parent cannot be itself!'
-                    })
-
-                const newParent = await Category.findById(newParentID)
-                if (!newParent) {
-                    return res.status(404).send({
-                        error: 'Invalid Parent Category!'
-                    })
-                }
-
-                //tested
-
-                //Validate the path length. This is set to 3
-                const pathLength = newParent.path.length + category.path.length
-                if (pathLength > 3) {
-                    return res.status(400).send({
-                        error: `The new parent results in a category path that is too long: ${newParent.path.join(" -> ")} -> ${category.path.join(" -> ")}`
-                    })
-                }
-
-                //Validate the name or new name . This must be unique when in the required format
-                newParent.children.forEach(async childID => {
-                    const child = await Category.findById(childID[0])     //The children array is 3 dimensional
-                    if (child.path[child.path.length - 1] === pathName) {
-                        return res.status(400).send({
-                            error: `Category already exists: ${newParent.path.join(" -> ")} -> ${child.path[child.path.length - 1]}!`
-                        })
-                    }
-                })
-
-            }
-        } else if (updates.includes('name')) {
-            //There is only a name update, so only a name change            
-
-            //First check if it is a high level category
-            const parentId = category.parent
-            if (!parentId) {
-                //Get all high level Categories - This should be a static method on Category
-                Category.find({ path: { $size: 1 } }, (err, data) => {
-                    if (err) {
-                        return res.status(500).send({
-                            error: `Error: ${err}`
-                        })
-                    }
-                    data.forEach(cat => {
-                        if (cat.path[0] === pathName) {
-                            return res.status(400).send({
-                                error: `Category already exists: ${pathName}!`
-                            })
-                        }
-                    })
-                })
-            } else {
-                //Parent is another category
-                const parent = await Category.findById(category.parentId)
-                //Get all children - This should be a function. Might be more efficient to use a query to get an array of children who's parent field matches the parentID?
-                parent.children.forEach(async childID => {
-                    const child = await Category.findById(childID[0])
-                    if (child.path[child.path.length - 1] === pathName) {
-                        return res.status(400).send({
-                            error: `Category already exists: ${newParent.path.join(" -> ")} -> ${child.path[child.path.length - 1]}!`
-                        })
-                    }
-                })
-
-            }
-        }
-
-        //All validation has been completed. Now the updating can begin.
-        //First update this category
-        //Then update the parent's & grandparent's children array
-        //Then update the children's path (their parent remains the same)
-        //Then update grandchildren's path
-
-        console.log('Finished')
-        res.send(req.category)
+        return res.status(200).send(category)
     } catch (e) {
-        res.status(500).send({ error: e.message })
+        return res.status(500).send({ error: e.message })
     }
 }
 
-//To be completed
+exports.displayAll = async (req, res) => {
+    try {
+        const categories = await Category.find()
+        return res.status(200).send(categories)
+    } catch (e) {
+        return res.status(500).send({ error: e.message })
+    }
+}
+
+exports.displayTree = async (req, res) => {
+    try {
+        const categoryTree = await Category.getChildrenTree({
+            fields: 'name ancestors',
+            options: {
+                lean: true
+            }
+        })
+        await writeJsonFile('CategoryTree.json', categoryTree)
+        return res.status(200).send(categoryTree)
+    } catch (e) {
+        console.log(`Error: ${e}`)
+        return res.status(500).send({ error: e.message })
+    }
+}
+
+exports.update = async (req, res) => {
+
+    /* 
+    Both Category Name must be sent
+
+    Future Improvements:
+        - Check that their are no duplicates in the ancestor array
+        - Check that the maximum level a category can have is 3.    
+    */
+    //already has category attached to req due to Middleware
+    //Need to send both parent and name! If parent is null or "", then it is still valid
+    // Future improvements - check that this does not result in duplicate ancestor array, check that this will not result in any sub categories having a level too deep before starting the crudUpdate
+    try {
+        const category = req.category
+        updatedParent = req.body.parent
+        updatedName = req.body.name
+        if (!updatedName) {
+            return res.status(500).send({ error: 'Category Name must be supplied!' })
+        }
+
+        const parentFound = await Category.validateParent(updatedParent)
+        if (!parentFound) {
+            return res.status(500).send({ error: 'Parent not valid!' })
+        }
+        category.parent = updatedParent
+        category.name = updatedName
+        await category.save()
+        //update all Category Tree
+        console.log('Finished initial update')
+        await Category.crudUpdate()
+
+        return res.status(200).send()
+
+    } catch (e) {
+        console.log(e)
+        return res.status(500).send({ error: e.message })
+    }
+}
+
+/* 
+This deletes a category.
+
+On delete the sub categories are reparented to the parent of the category that is deleted. If there is no parent, then the sub  categories become level 1 categories
+
+To do: What will happen to the ads that belong to the category? Delete them for now. Otherwise the admin should 'Merge' the category with an existing category and then delete the initial category
+*/
 exports.deleteCategory = async (req, res) => {
     try {
         //
         const category = req.category
-        const children = category.getChildren() //Need to test this
-        //Find all Children
+        await category.remove()//What will happen to the categories's ads?
+        await Category.crudUpdate()
+        return res.status(200).send()
     } catch (e) {
-        //
+        return res.status(500).send({ error: e.message })
     }
 }
 

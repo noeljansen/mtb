@@ -1,0 +1,190 @@
+[
+	{
+		"_id": "5eae647e9febfb5ae4fdfad6",
+		"name": "MTB",
+		"path": "5eae647e9febfb5ae4fdfad6",
+		"ancestors": [
+			"mtb"
+		],
+		"children": [
+			{
+				"_id": "5eae65359febfb5ae4fdfad9",
+				"name": "Complete Bikes",
+				"parent": "5eae647e9febfb5ae4fdfad6",
+				"path": "5eae647e9febfb5ae4fdfad6#5eae65359febfb5ae4fdfad9",
+				"ancestors": [
+					"mtb",
+					"complete-bikes"
+				],
+				"children": []
+			}
+		]
+	},
+	{
+		"_id": "5eae64849febfb5ae4fdfad7",
+		"name": "Road",
+		"path": "5eae64849febfb5ae4fdfad7",
+		"ancestors": [
+			"road"
+		],
+		"children": [
+			{
+				"_id": "5eae65489febfb5ae4fdfada",
+				"name": "Complete Bikes",
+				"parent": "5eae64849febfb5ae4fdfad7",
+				"path": "5eae64849febfb5ae4fdfad7#5eae65489febfb5ae4fdfada",
+				"ancestors": [
+					"road",
+					"complete-bikes"
+				],
+				"children": []
+			},
+			{
+				"_id": "5eae65599febfb5ae4fdfadb",
+				"name": "Parts",
+				"parent": "5eae64849febfb5ae4fdfad7",
+				"path": "5eae64849febfb5ae4fdfad7#5eae65599febfb5ae4fdfadb",
+				"ancestors": [
+					"road",
+					"parts"
+				],
+				"children": [
+					{
+						"_id": "5eae656e9febfb5ae4fdfadc",
+						"name": "Handle Bars",
+						"parent": "5eae65599febfb5ae4fdfadb",
+						"path": "5eae64849febfb5ae4fdfad7#5eae65599febfb5ae4fdfadb#5eae656e9febfb5ae4fdfadc",
+						"ancestors": [
+							"road",
+							"parts",
+							"handle-bars"
+						],
+						"children": []
+					},
+					{
+						"_id": "5eae65749febfb5ae4fdfadd",
+						"name": "Wheels",
+						"parent": "5eae65599febfb5ae4fdfadb",
+						"path": "5eae64849febfb5ae4fdfad7#5eae65599febfb5ae4fdfadb#5eae65749febfb5ae4fdfadd",
+						"ancestors": [
+							"road",
+							"parts",
+							"wheels"
+						],
+						"children": []
+					},
+					{
+						"_id": "5eae657a9febfb5ae4fdfade",
+						"name": "Frames",
+						"parent": "5eae65599febfb5ae4fdfadb",
+						"path": "5eae64849febfb5ae4fdfad7#5eae65599febfb5ae4fdfadb#5eae657a9febfb5ae4fdfade",
+						"ancestors": [
+							"road",
+							"parts",
+							"frames"
+						],
+						"children": []
+					},
+					{
+						"_id": "5eae657e9febfb5ae4fdfadf",
+						"name": "Forks",
+						"parent": "5eae65599febfb5ae4fdfadb",
+						"path": "5eae64849febfb5ae4fdfad7#5eae65599febfb5ae4fdfadb#5eae657e9febfb5ae4fdfadf",
+						"ancestors": [
+							"road",
+							"parts",
+							"forks"
+						],
+						"children": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"_id": "5eae648b9febfb5ae4fdfad8",
+		"name": "Accessories",
+		"path": "5eae648b9febfb5ae4fdfad8",
+		"ancestors": [
+			"accessories"
+		],
+		"children": [
+			{
+				"_id": "5eae66339febfb5ae4fdfae0",
+				"name": "Tools",
+				"parent": "5eae648b9febfb5ae4fdfad8",
+				"path": "5eae648b9febfb5ae4fdfad8#5eae66339febfb5ae4fdfae0",
+				"ancestors": [
+					"accessories",
+					"tools"
+				],
+				"children": []
+			}
+		]
+	},
+	{
+		"_id": "5eae66419febfb5ae4fdfae1",
+		"name": "Riding Gear",
+		"path": "5eae66419febfb5ae4fdfae1",
+		"ancestors": [
+			"riding-gear"
+		],
+		"children": [
+			{
+				"_id": "5eae664a9febfb5ae4fdfae2",
+				"name": "Helmets",
+				"parent": "5eae66419febfb5ae4fdfae1",
+				"path": "5eae66419febfb5ae4fdfae1#5eae664a9febfb5ae4fdfae2",
+				"ancestors": [
+					"riding-gear",
+					"helmets"
+				],
+				"children": []
+			},
+			{
+				"_id": "5eae664e9febfb5ae4fdfae3",
+				"name": "Shoes",
+				"parent": "5eae66419febfb5ae4fdfae1",
+				"path": "5eae66419febfb5ae4fdfae1#5eae664e9febfb5ae4fdfae3",
+				"ancestors": [
+					"riding-gear",
+					"shoes"
+				],
+				"children": []
+			},
+			{
+				"_id": "5eb153de2e43d950f818e353",
+				"ancestors": [
+					"riding-gear",
+					"hydration-packs"
+				],
+				"name": "Hydration Packs",
+				"parent": "5eae66419febfb5ae4fdfae1",
+				"path": "5eae66419febfb5ae4fdfae1#5eb153de2e43d950f818e353",
+				"children": []
+			},
+			{
+				"_id": "5eb15517c831e816bc3ced79",
+				"ancestors": [
+					"riding-gear",
+					"gloves"
+				],
+				"name": "Gloves",
+				"parent": "5eae66419febfb5ae4fdfae1",
+				"path": "5eae66419febfb5ae4fdfae1#5eb15517c831e816bc3ced79",
+				"children": []
+			},
+			{
+				"_id": "5eb1552dc831e816bc3ced7a",
+				"ancestors": [
+					"riding-gear",
+					"adult-jerseys"
+				],
+				"name": "Adult Jerseys",
+				"parent": "5eae66419febfb5ae4fdfae1",
+				"path": "5eae66419febfb5ae4fdfae1#5eb1552dc831e816bc3ced7a",
+				"children": []
+			}
+		]
+	}
+]

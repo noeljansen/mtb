@@ -122,6 +122,10 @@ exports.getUser = async (req, res) => {
     }
 }
 
+/* 
+To do: Delete all ads that belong to user
+*/
+
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
