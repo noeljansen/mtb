@@ -8,7 +8,7 @@ exports.signup = async (req, res) => {
         const token = await user.createAuthToken()
         res.status(201).send({ user, token })
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send({ error: e.message })
     }
 }
 
@@ -19,7 +19,7 @@ exports.signin = async (req, res) => {
         const token = await user.createAuthToken()
         res.send({ user, token })
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send({ error: e.message })
     }
 }
 

@@ -81,6 +81,13 @@ exports.displayAll = async (req, res) => {
     }
 }
 
+/* 
+ Display Tree - Displays the category tree structure. This can be used to get an overview of the categorys and to build the menus
+
+ Future improvements:
+    - Add a warnings property if there are any potential errors!
+*/
+
 exports.displayTree = async (req, res) => {
     try {
         const categoryTree = await Category.getChildrenTree({

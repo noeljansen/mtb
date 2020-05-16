@@ -33,3 +33,11 @@ exports.isAdmin = (req, res, next) => {
     }
 }
 
+exports.isSuperAdmin = (req, res, next) => {
+    if (req.user.level > 1) {
+        next()
+    } else {
+        res.status(401).send({ error: 'User not authorised!' })
+    }
+}
+
