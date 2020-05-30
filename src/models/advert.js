@@ -33,6 +33,10 @@ const advertSchema = new mongoose.Schema({
                 throw new Error('Title cannot contain any profanity!')
             }
         }
+    }, price: {
+        type: Number,
+        required: true,
+        min: 0
     },
     description: {
         type: String,
@@ -46,7 +50,7 @@ const advertSchema = new mongoose.Schema({
         }
     },
     images: {
-        type: [Buffer],
+        type: [String],
         required: false,    //Change to true
         validate(value) {
             if (value.length > 5) {
@@ -70,6 +74,18 @@ const advertSchema = new mongoose.Schema({
     {
         timestamps: true
     })
+
+
+//Returns the Cloudinary Public Key of the Image stored at the given index in the Images property. If there are no images, it will return null
+advertSchema.methods.getImagePublicKey = function getImagePublicKey(index) {
+    const advert = this
+    if (advert.images.length == 0) {
+        return null
+    }
+    const iString = advert.images[index]
+    return iString.substring(iString.lastIndexOf('/') + 1, iString.lastIndexOf('.'))
+
+}
 
 const Advert = mongoose.model('Advert', advertSchema)
 module.exports = Advert
