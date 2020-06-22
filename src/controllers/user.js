@@ -6,9 +6,9 @@ exports.signup = async (req, res) => {
         await user.save()
         console.log('User Saved, getting Auth Token next...')
         const token = await user.createAuthToken()
-        res.status(201).send({ user, token })
+        return res.status(201).send({ user, token })
     } catch (e) {
-        res.status(400).send({ error: e.message })
+        return res.status(400).send({ error: e.message })
     }
 }
 

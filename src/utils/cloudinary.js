@@ -12,12 +12,13 @@ exports.uploads = (filePath) => {
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload(
             filePath,
-            { folder: "mtb/ads" },
+            //{ folder: "mtb/ads" },
+            { folder: process.env.CLOUDINARY_FOLDER },
             function (error, image) {
                 if (error) {
                     return reject('Error uploading image to cloud!')
                 }
-                console.log('Image uploaded to the server')
+                //console.log('Image uploaded to the server')
                 resolve(image)
             }
         )
@@ -31,10 +32,10 @@ exports.deleteSingle = (publicKey) => {
             publicKey,
             (error, result) => {
                 if (error || result.result != "ok") {
-                    console.log(`Delete Error: ${result.result}`)
+                    //console.log(`Delete Error: ${result.result}`)
                     return reject(result.result)
                 }
-                console.log('Image deleted from server')
+                //console.log('Image deleted from server')
                 return resolve(result.result)
             }
         )

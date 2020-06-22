@@ -74,23 +74,37 @@ categorySchema.statics.validateParent = async function (parentId) {
 
 // This Method needs to be called after we have saved a document as this means that mpath would have run on all documents. This will then update the fields: ancestors, immediateChildren, allChildren
 categorySchema.statics.crudUpdate = async function () {
+    // console.log(' ########## In CRUD Update ##########')
+
     const categories = await Category.find()
+    // This only needs to be called if there are more than one categories. If it is called with only one category, it creates errors with Mpath!
+    if (categories.length == 1) {
+        //console.log('First Category Made')
+        const cat = categories[0]
+        cat.ancestors.push(toNameString(cat.name))
+        await cat.save()
+        return
+    }
 
     for (const cat of categories) {
+        ///console.log(`Category Name: ${cat.name}`)
 
         //update ancestors from path. This will get all the IDs, find the respective Category and add the name to the path
-        const ancestors = []
+        var ancestors = []
         if (cat.path.length > 0) {
             const ancestorIds = cat.path.split('#')
+            //console.log(`ancestorIds: ${ancestorIds}`)
             for (id of ancestorIds) {
                 const ancestor = await Category.findById(id)
                 if (!ancestor) {
+                    //console.log('Invalid ID in Path')
                     throw new Error("Invalid ID in path!")
                 } else {
                     ancestors.push(toNameString(ancestor.name))
                 }
             }
         }
+        //console.log(`ancestors: ${ancestors}`)
         cat.ancestors = ancestors
 
         //update immediate children (Ids and Names)
@@ -118,7 +132,7 @@ categorySchema.statics.crudUpdate = async function () {
 
         cat.allChildrenNames = childrenNames
         cat.allChildrenIds = childrenIds
-
+        // console.log(`Category about to be saved in CRUD Update: ${JSON.stringify(cat)}`)
         await cat.save()
     }
 

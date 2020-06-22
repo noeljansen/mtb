@@ -19,6 +19,7 @@ exports.create = async (req, res) => {
                     error: 'Parent Category invalid!'
                 })
             }
+
             if (parentCategory.ancestors.length > 2) {
                 return res.status(400).send({
                     error: 'Category has to many parents! Categories may only be 3 levels deep!'
@@ -27,9 +28,7 @@ exports.create = async (req, res) => {
         }
 
         await category.save()
-        console.log(`Category Created: ${category}`)
 
-        //update all Category Tree
         await Category.crudUpdate()
 
         //return updated Category with Tree information
@@ -38,6 +37,8 @@ exports.create = async (req, res) => {
 
         return res.status(201).send(updatedCat)
     } catch (e) {
+        console.trace()
+        console.log(e.message)
         res.status(500).send({ error: e.message })
     }
 }

@@ -3,6 +3,8 @@ const validator = require('validator')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+const Advert = require('./advert')
+
 /*
 User Schema:    
     - Level: 0 = normal user, 1 = admin, 2 = super-admin
@@ -124,6 +126,12 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
+//Delete user's adverts before the user is deleted
+userSchema.pre('remove', async function (next) {
+    const user = this
+    await Advert.deleteMany({ user: user._id })
+    next()
+})
 
 // #### Export ###
 const User = mongoose.model('User', userSchema)

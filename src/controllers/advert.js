@@ -1,6 +1,7 @@
 const fs = require('fs')
 
 const mongoose = require('mongoose')
+const ObjectId = mongoose.Types.ObjectId;
 
 const Advert = require('../models/advert')
 const Category = require('../models/category')
@@ -26,16 +27,16 @@ exports.create = async (req, res) => {
         //Check that body data is valid before uploading images to cloud
         const valError = advert.validateSync()
         if (valError) {
-            console.log(`valError: ${valError}`)
+            //console.log(`valError: ${valError}`)
             return res.status(400).send({ error: valError.message })
         }
 
         // Save images to cloudinary
         const images = []
         if (req.files.length > 0) {
-            console.log('Files have been uploaded to server')
+            //console.log('Files have been uploaded to server')
             const reqString = JSON.stringify(req.files)
-            console.log(`Request: ${reqString}`)
+            //console.log(`Request: ${reqString}`)
 
             //use this to call the promise which uploads a single image to cloudinary
             const uploader = async (path) => await uploads(path)
@@ -50,7 +51,7 @@ exports.create = async (req, res) => {
                     //delete image from server uploads directory
                     fs.unlinkSync(filePath)
                 } catch (e) {
-                    console.log('Error with cloudinary upload')
+                    //console.log('Error with cloudinary upload')
                     throw new Error('Error uploading images to cloud')
                 }
             }
@@ -94,17 +95,7 @@ exports.update = async (req, res) => {
     try {
         //First make sure that the advert being modified belongs to the logged in user
         const advert = req.advert
-        console.log(`advert.user: ${advert.user}`)
         const user = req.user
-        console.log(`user._id: ${user._id}`)
-
-
-
-        if (!advert.user.equals(user._id)) {
-            console.log('User not valid')
-            return res.status(400).send({ error: 'User not authorized!' })
-
-        }
 
         //Updates the client is attempting to make
         const updates = Object.keys(req.body)
@@ -167,30 +158,27 @@ exports.deleteImage = async (req, res) => {
         const advert = req.advert
         var foundIndex = null
 
-        console.log(`image: ${image}`)
-
         advert.images.forEach((img, i) => {
             if (advert.getImagePublicKey(i) == image)
                 foundIndex = i
-            console.log(`advert.getImagePublicKey(i): ${advert.getImagePublicKey(i)}`)
+            //console.log(`advert.getImagePublicKey(i): ${advert.getImagePublicKey(i)}`)
         })
         if (foundIndex == null)
             return res.status(404).send({ error: 'Image does not belong to advert' })
 
         // Image belongs to the advert
-        const imagePublicId = 'mtb/ads/' + image
-        console.log(`imagePublicId: ${imagePublicId}`)
+        //const imagePublicId = 'mtb/ads/' + image
+        const imagePublicId = process.env.CLOUDINARY_FOLDER + image
 
         try {
             // Delete the image from cloud storage
             const deleteImage = await deleteSingle(imagePublicId)
-            console.log(`deleteImage: ${deleteImage}`)
+
             // Remove the image from the Advert document
             advert.images.splice(foundIndex, 1)
             await advert.save()
             return res.status(200).send()
         } catch (error) {
-            console.log(`error: ${error}`)
             return res.status(404).send({ error })
         }
 
@@ -203,7 +191,117 @@ exports.deleteImage = async (req, res) => {
 exports.addImages = async (req, res) => {
     try {
 
-    } catch (e) {
+        const advert = req.advert
 
+        // Make sure that there will only be 5 images for the add before attempting to upload to cloudinary
+        const currImageTotal = advert.images.length
+        if ((req.files.length + currImageTotal) > 5) {
+            return res.status(400).send({ error: 'Too many images! An advert can only have 5 images!' })
+        }
+
+        //use this to call the promise which uploads a single image to cloudinary
+        const uploader = async (path) => await uploads(path)
+
+        // Save images to cloudinary
+        for (const file of req.files) {
+            const filePath = file.path
+            try {
+                const image = await uploader(filePath)
+                advert.images.push(image.secure_url)
+                //delete image from server uploads directory
+                fs.unlinkSync(filePath)
+            } catch (e) {
+                console.log('Error with cloudinary upload')
+                throw new Error('Error uploading images to cloud')
+            }
+        }
+
+        await advert.save()
+        return res.status(200).send(advert)
+    } catch (e) {
+        //console.log(`e: ${e}`)
+        return res.status(500).send({ error: e.message })
+    }
+}
+
+exports.deleteAdvert = async (req, res) => {
+    try {
+        const advert = req.advert
+        // Delete all images from cloudinary
+        var i = 0
+        for (image of advert.images) {
+            //const imagePublicId = 'mtb/ads/' + advert.getImagePublicKey(i)
+            const imagePublicId = process.env.CLOUDINARY_FOLDER + advert.getImagePublicKey(i)
+            try {
+                const deleteImage = await deleteSingle(imagePublicId)
+                console.log(`deleteImage: ${deleteImage}`)
+            } catch (e) {
+                throw new Error('Error deleting image from Cloud')
+            }
+            i++
+        }
+        await advert.remove()
+        return res.status(200).send()
+    } catch (e) {
+        res.status(500).send({ error: e.message })
+    }
+}
+
+/* 
+    This will return all ads that belong to a category as well as subcategories
+
+    To do:
+        - Error checking of options against array of allowed values
+    
+*/
+exports.listFromCategory = async (req, res) => {
+    try {
+        var category
+        //First get Category. 
+        if (req.category) {
+            //If the route was called with a category ID, then this will be used.
+            category = req.category
+        } else {
+            //If the route uses the category path, then the below will be used
+            //req.params in an array     
+            var paramsArray = Object.values(req.params)
+
+            //convert params to lower case
+            paramsArray = paramsArray.map((x) => {
+                return x.toLowerCase()
+            })
+            try {
+                category = await Category.findOne({ ancestors: paramsArray })
+            } catch (e) {
+                return res.status(404).send({ errror: 'Category does not exist!' })
+            }
+        }
+        //console.log(`category: ${category}`)
+        if (!category) {
+            return res.status(404).send({ errror: 'Category does not exist!' })
+        }
+        //console.log(`category: ${category}`)
+        // Get Array of Category's Children IDs plus this Category's ID
+        const arrIds = category.allChildrenIds.concat(category._id)
+
+        // Query Options 
+        var options = {}
+        if (req.query.limit)
+            options.limit = parseInt(req.query.limit)
+        if (req.query.skip)
+            options.skip = parseInt(req.query.skip)
+        if (req.query.order)
+            options.order = req.query.order
+        if (req.query.sort)
+            options.sort = req.query.sort
+
+        // console.log(`Query Options: ${JSON.stringify(options)}`)
+
+        // Find All Adverts that have an ID in the above array
+        const adverts = await Advert.find({ category: { $in: arrIds } }, null, options)
+
+        return res.status(200).send(adverts)
+    } catch (e) {
+        res.status(500).send({ error: e.message })
     }
 }

@@ -16,4 +16,4 @@ app.use('/api', userRouter)
 app.use('/api', categoryRouter)
 app.use('/api', advertRouter)
 
-module.exports = app
+module.exports = app 

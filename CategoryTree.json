@@ -102,27 +102,6 @@
 		]
 	},
 	{
-		"_id": "5eae648b9febfb5ae4fdfad8",
-		"name": "Accessories",
-		"path": "5eae648b9febfb5ae4fdfad8",
-		"ancestors": [
-			"accessories"
-		],
-		"children": [
-			{
-				"_id": "5eae66339febfb5ae4fdfae0",
-				"name": "Tools",
-				"parent": "5eae648b9febfb5ae4fdfad8",
-				"path": "5eae648b9febfb5ae4fdfad8#5eae66339febfb5ae4fdfae0",
-				"ancestors": [
-					"accessories",
-					"tools"
-				],
-				"children": []
-			}
-		]
-	},
-	{
 		"_id": "5eae66419febfb5ae4fdfae1",
 		"name": "Riding Gear",
 		"path": "5eae66419febfb5ae4fdfae1",
@@ -162,29 +141,16 @@
 				"parent": "5eae66419febfb5ae4fdfae1",
 				"path": "5eae66419febfb5ae4fdfae1#5eb153de2e43d950f818e353",
 				"children": []
-			},
-			{
-				"_id": "5eb15517c831e816bc3ced79",
-				"ancestors": [
-					"riding-gear",
-					"gloves"
-				],
-				"name": "Gloves",
-				"parent": "5eae66419febfb5ae4fdfae1",
-				"path": "5eae66419febfb5ae4fdfae1#5eb15517c831e816bc3ced79",
-				"children": []
-			},
-			{
-				"_id": "5eb1552dc831e816bc3ced7a",
-				"ancestors": [
-					"riding-gear",
-					"adult-jerseys"
-				],
-				"name": "Adult Jerseys",
-				"parent": "5eae66419febfb5ae4fdfae1",
-				"path": "5eae66419febfb5ae4fdfae1#5eb1552dc831e816bc3ced7a",
-				"children": []
 			}
 		]
+	},
+	{
+		"_id": "5eb2b55fe5b5391c94901532",
+		"ancestors": [
+			"spanners"
+		],
+		"name": "Spanners",
+		"path": "5eb2b55fe5b5391c94901532",
+		"children": []
 	}
 ]

@@ -17,13 +17,13 @@ router.post('/categories/create', userAuth, isSuperAdmin, create)
 //This needs to be listed before the route for /categories/:categoryId'
 router.get('/categories/tree', displayTree)
 
-router.get(router.get('/categories/:categoryId', displayById), displayById)
+router.get('/categories/id/:categoryId', displayById)
 router.get('/categories/', displayAll)
 
 // Get via acestors routes all use the same method. Perhaps there is a better way to set this up?
-router.get('/categories/c/:grandparent/:parent/:child', display)
-router.get('/categories/c/:parent/:child', display)
-router.get('/categories/c/:child', display)
+router.get('/categories/:grandparent/:parent/:child', display)
+router.get('/categories/:parent/:child', display)
+router.get('/categories/:child', display)
 
 router.put('/categories/:categoryId', userAuth, isSuperAdmin, update)
 

@@ -4,13 +4,15 @@ const multer = require('multer')
 
 const { userAuth } = require('../middleware/auth')
 const { advertById, advertUserAuth } = require('../middleware/advert')
+const { categoryById } = require('../middleware/category')
 
-const { create, display, displayAll, update, deleteImage, addImages } = require('../controllers/advert')
+const { create, display, displayAll, update, deleteImage, addImages, deleteAdvert, listFromCategory } = require('../controllers/advert')
 
 const router = new express.Router()
 
 //Middleware
 router.param('advertId', advertById)
+router.param('categoryId', categoryById)
 
 //Multer for image uploads - Note other form fields are added to the Req body
 // First save the image to local storage. It will be uploaded from here to cloudinary and then deleted
@@ -37,18 +39,25 @@ const upload = multer({
 })
 
 
-//Routes
+// Routes
 
 router.post('/ads', userAuth, upload.array('images', 5), create)
 
 router.get('/ads/:advertId', display)
 router.get('/ads', displayAll)
 
-router.put('/ads/:advertId', userAuth, update)
+router.put('/ads/:advertId', userAuth, advertUserAuth, update)
+router.delete('/ads/:advertId', userAuth, advertUserAuth, deleteAdvert)
 
-//To do
+// Image Routes
 router.delete('/ads/:advertId/:imageId', userAuth, advertUserAuth, deleteImage)     //Delete Single Image
-//router.delete(/ads/:advertId/:images, userAuth, deleteAllImage)   //Delete All Images - Future Functionality
-//router.put(/ads/:advertId/images, userAuth, addImages)            //Upload Images
+router.put('/ads/:advertId/images', userAuth, upload.array('images', 5), advertUserAuth, addImages)     //Upload Images
+
+// List Adverts based on Category
+router.get('/c/id/:categoryId', listFromCategory)
+
+router.get('/c/:grandparent/:parent/:child', listFromCategory)
+router.get('/c/:parent/:child', listFromCategory)
+router.get('/c/:child', listFromCategory)
 
 module.exports = router
