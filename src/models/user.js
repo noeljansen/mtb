@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
     level: {
         type: Number,
         required: true,
-
     },
     email: {
         type: String,
@@ -89,12 +88,9 @@ userSchema.methods.createAuthToken = async function () {
 userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()
-
-    //delete userObject.level   - Investigate whether this is a security risk
     delete userObject.password
     delete userObject.tokens
     delete userObject.profilePic
-
     return userObject
 }
 

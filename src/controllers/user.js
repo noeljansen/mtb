@@ -26,7 +26,6 @@ exports.signin = async (req, res) => {
 /*
 Signout from current device only!    
 Signout will only run if the authUser middleware runs. This would have added the user object to the request
-Remember that token is an object with property token, so need to access token.token
 */
 exports.signout = async (req, res) => {
     try {
@@ -42,6 +41,7 @@ exports.signout = async (req, res) => {
     }
 }
 
+// Signour from all devices
 exports.signoutAll = async (req, res) => {
     try {
         //remove all JWTs
@@ -83,7 +83,6 @@ exports.update = async (req, res) => {
                 req.user[update] = req.body[update]
             })
             await req.user.save()
-
             res.send(req.user)
         } catch (e) {
             res.status(400).send({ error: e.message })
@@ -123,7 +122,9 @@ exports.getUser = async (req, res) => {
 }
 
 /* 
-To do: Delete all ads that belong to user
+Delete User
+
+When a user is deleted, all their adverts are deleted.
 */
 
 exports.deleteUser = async (req, res) => {

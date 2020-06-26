@@ -3,7 +3,6 @@ const fs = require('fs')
 const writeJsonFile = require('write-json-file');
 
 const Category = require('../models/category')
-const { toNameString } = require('../utils/strings')
 
 exports.create = async (req, res) => {
     try {
@@ -28,11 +27,9 @@ exports.create = async (req, res) => {
         }
 
         await category.save()
-
         await Category.crudUpdate()
 
         //return updated Category with Tree information
-
         const updatedCat = await Category.findById(category._id)
 
         return res.status(201).send(updatedCat)
@@ -83,7 +80,7 @@ exports.displayAll = async (req, res) => {
 }
 
 /* 
- Display Tree - Displays the category tree structure. This can be used to get an overview of the categorys and to build the menus
+ Display Tree - Displays the category tree structure. This can be used to get an overview of the categoryies and to build the menus
 
  Future improvements:
     - Add a warnings property if there are any potential errors!
@@ -91,6 +88,7 @@ exports.displayAll = async (req, res) => {
 
 exports.displayTree = async (req, res) => {
     try {
+        // Call MPath Function getChildrenTree
         const categoryTree = await Category.getChildrenTree({
             fields: 'name ancestors',
             options: {
@@ -108,15 +106,14 @@ exports.displayTree = async (req, res) => {
 exports.update = async (req, res) => {
 
     /* 
-    Both Category Name must be sent
+    Note :Both Parent Category and  Name must be sent
 
     Future Improvements:
         - Check that their are no duplicates in the ancestor array
-        - Check that the maximum level a category can have is 3.    
+        - Check that the maximum level a category can have is 3.        
+    
     */
-    //already has category attached to req due to Middleware
-    //Need to send both parent and name! If parent is null or "", then it is still valid
-    // Future improvements - check that this does not result in duplicate ancestor array, check that this will not result in any sub categories having a level too deep before starting the crudUpdate
+
     try {
         const category = req.category
         updatedParent = req.body.parent
@@ -132,8 +129,8 @@ exports.update = async (req, res) => {
         category.parent = updatedParent
         category.name = updatedName
         await category.save()
-        //update all Category Tree
-        console.log('Finished initial update')
+
+        //update the whole category tree
         await Category.crudUpdate()
 
         return res.status(200).send()
@@ -149,13 +146,12 @@ This deletes a category.
 
 On delete the sub categories are reparented to the parent of the category that is deleted. If there is no parent, then the sub  categories become level 1 categories
 
-To do: What will happen to the ads that belong to the category? Delete them for now. Otherwise the admin should 'Merge' the category with an existing category and then delete the initial category
 */
 exports.deleteCategory = async (req, res) => {
     try {
         //
         const category = req.category
-        await category.remove()//What will happen to the categories's ads?
+        await category.remove()
         await Category.crudUpdate()
         return res.status(200).send()
     } catch (e) {

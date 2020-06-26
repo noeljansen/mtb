@@ -12,7 +12,6 @@ beforeEach(setupDatabase)
 afterEach((done) => {
     // This is needed to delete the index from the collection. Otherwise Jest causes errors with mpath.
     mongoose.connection.collections.categories.drop(() => {
-        console.log('###### Test Complete ########')
         done()
     })
 })

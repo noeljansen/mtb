@@ -36,9 +36,7 @@ exports.advertUserAuth = async (req, res, next) => {
         } else if (!advert.user.equals(user._id)) {
             return res.status(400).send({ error: 'User not authorized!' })
         }
-
         next()
-
     } catch (e) {
         return res.status(500).send({ error: e.message })
     }

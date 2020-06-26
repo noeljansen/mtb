@@ -1,4 +1,3 @@
-
 const express = require('express')
 
 const { create, display, displayAll, displayById, displayTree, update, deleteCategory } = require('../controllers/category')

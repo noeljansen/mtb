@@ -10,7 +10,6 @@ const app = express()
 //recgonize incoming requests and send outgoing responses as JSON objects
 app.use(express.json())
 
-
 //Routes
 app.use('/api', userRouter)
 app.use('/api', categoryRouter)

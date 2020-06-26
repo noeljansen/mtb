@@ -29,7 +29,7 @@ const categorySchema = new mongoose.Schema({
     // },
     ancestors: {  //This will be the path with the IDs swapped for the category names 
         type: [String],
-        unique: true,
+        unique: false,
         required: false,//First need to save with MPath and afterwards generate the URL - Not efficient, but OK for now,
         validate(value) {
             //Validate Category Depth - This will be hardcoded to 3 i.e Grandparent -> Parent -> Child
@@ -58,7 +58,7 @@ categorySchema.plugin(MpathPlugin)
 
 // #### Category Methods ####
 
-//  #### Category Static Functions ####
+// #### Category Static Functions ####
 
 //Validate that parent exists
 categorySchema.statics.validateParent = async function (parentId) {
@@ -74,7 +74,6 @@ categorySchema.statics.validateParent = async function (parentId) {
 
 // This Method needs to be called after we have saved a document as this means that mpath would have run on all documents. This will then update the fields: ancestors, immediateChildren, allChildren
 categorySchema.statics.crudUpdate = async function () {
-    // console.log(' ########## In CRUD Update ##########')
 
     const categories = await Category.find()
     // This only needs to be called if there are more than one categories. If it is called with only one category, it creates errors with Mpath!
@@ -87,7 +86,6 @@ categorySchema.statics.crudUpdate = async function () {
     }
 
     for (const cat of categories) {
-        ///console.log(`Category Name: ${cat.name}`)
 
         //update ancestors from path. This will get all the IDs, find the respective Category and add the name to the path
         var ancestors = []
@@ -135,10 +133,17 @@ categorySchema.statics.crudUpdate = async function () {
         // console.log(`Category about to be saved in CRUD Update: ${JSON.stringify(cat)}`)
         await cat.save()
     }
-
-
 }
 
+
+// #### Category Middleware ####
+
+//Delete category's adverts before the user is deleted
+categorySchema.pre('remove', async function (next) {
+    const category = this
+    await Advert.deleteMany({ parent: category._id })
+    next()
+})
 
 const Category = mongoose.model('Category', categorySchema)
 module.exports = Category

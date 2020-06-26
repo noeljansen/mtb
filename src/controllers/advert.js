@@ -9,11 +9,6 @@ const Category = require('../models/category')
 const { uploads, deleteSingle } = require('../utils/cloudinary')
 
 
-/* 
-Create
-
-To do: - Only upload the photos after validation has passed!
-*/
 exports.create = async (req, res) => {
     try {
         // Prevent users from approving adverts
@@ -45,8 +40,6 @@ exports.create = async (req, res) => {
                 const filePath = file.path
                 try {
                     const image = await uploader(filePath)
-                    //imageString = JSON.stringify(image)
-                    //console.log(`imageString: ${imageString}`)
                     images.push(image.secure_url)
                     //delete image from server uploads directory
                     fs.unlinkSync(filePath)
@@ -87,8 +80,6 @@ exports.displayAll = async (req, res) => {
 Update - Advert
 For now a user can update their own advert and the update does not need to be approved.
 
-To do: - 
- - Set approved to false when an update is made and only action the updates once approved (i.e. keep advert up until this has happened)
 */
 
 exports.update = async (req, res) => {
@@ -142,14 +133,6 @@ exports.update = async (req, res) => {
     }
 }
 
-/* 
- Delete Image
-
- To do: 
-    - Make sure image belongs to the advert 
-    - Remove image from cloudinary
-    - Remove image from advert document
- */
 exports.deleteImage = async (req, res) => {
 
     try {
@@ -166,8 +149,7 @@ exports.deleteImage = async (req, res) => {
         if (foundIndex == null)
             return res.status(404).send({ error: 'Image does not belong to advert' })
 
-        // Image belongs to the advert
-        //const imagePublicId = 'mtb/ads/' + image
+        // Image belongs to the advert        
         const imagePublicId = process.env.CLOUDINARY_FOLDER + image
 
         try {
@@ -250,7 +232,7 @@ exports.deleteAdvert = async (req, res) => {
 /* 
     This will return all ads that belong to a category as well as subcategories
 
-    To do:
+    Future improvement:
         - Error checking of options against array of allowed values
     
 */
@@ -263,6 +245,7 @@ exports.listFromCategory = async (req, res) => {
             category = req.category
         } else {
             //If the route uses the category path, then the below will be used
+
             //req.params in an array     
             var paramsArray = Object.values(req.params)
 
@@ -281,6 +264,7 @@ exports.listFromCategory = async (req, res) => {
             return res.status(404).send({ errror: 'Category does not exist!' })
         }
         //console.log(`category: ${category}`)
+
         // Get Array of Category's Children IDs plus this Category's ID
         const arrIds = category.allChildrenIds.concat(category._id)
 

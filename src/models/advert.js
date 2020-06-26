@@ -7,8 +7,6 @@ const filter = new Filter()
 /* 
  Advert Schema
 
- Future improvements:
-    - Store images on Cloud Storage such as AWS and store a URL to the photos instead of binary data (this will be cheaper and provide better performance)
 */
 
 const advertSchema = new mongoose.Schema({

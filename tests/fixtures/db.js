@@ -7,7 +7,6 @@ const Category = require('../../src/models/category')
 const Advert = require('../../src/models/advert')
 
 //Setup users
-
 const normalUserId = new mongoose.Types.ObjectId()
 const normalUser = {
     _id: normalUserId,
@@ -51,8 +50,6 @@ const superAdminUser = {
 }
 
 // Setup Categories
-
-
 const catRoad = {
     _id: new mongoose.Types.ObjectId(),
     name: "Road"
