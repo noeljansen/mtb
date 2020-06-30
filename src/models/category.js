@@ -1,5 +1,4 @@
-/*
- 
+/* 
 Category Model setup with M-path: https://www.npmjs.com/package/mongoose-mpath
 */
 
@@ -72,21 +71,39 @@ categorySchema.statics.validateParent = async function (parentId) {
     return true
 }
 
-// This Method needs to be called after we have saved a document as this means that mpath would have run on all documents. This will then update the fields: ancestors, immediateChildren, allChildren
-categorySchema.statics.crudUpdate = async function () {
 
+/* 
+ crudUpdate()
+
+ This function needs to be called after a document is saved, updated, or deleted.
+ The mongoose mpath plugin only runs after a document has had a crud operation. The category tree is then changed.
+
+ This function is used to populate the following properties of all documents:
+    - ancestors
+    - immediateChildrenIds
+    - immediateChildrenNames
+    - allChildrenIds
+    - allChildrenNames
+
+ Note:   Currently this function is called manually after a crudUpdate. It CANNOT be implemented with a save post hook, as the function itself calls save(), creating an endless loop
+         While this is not an efficient / elegant solution, in reality Category updates will not happen very often and will only be perforned by a superadmin
+*/
+
+categorySchema.statics.crudUpdate = async function () {
     const categories = await Category.find()
     // This only needs to be called if there are more than one categories. If it is called with only one category, it creates errors with Mpath!
     if (categories.length == 1) {
         //console.log('First Category Made')
         const cat = categories[0]
-        cat.ancestors.push(toNameString(cat.name))
+        // PJ - Create Blank Array first!
+        const noAncestors = []
+        noAncestors.push(toNameString(cat.name))
+        cat.ancestors = noAncestors
         await cat.save()
         return
     }
 
     for (const cat of categories) {
-
         //update ancestors from path. This will get all the IDs, find the respective Category and add the name to the path
         var ancestors = []
         if (cat.path.length > 0) {
@@ -106,7 +123,7 @@ categorySchema.statics.crudUpdate = async function () {
         cat.ancestors = ancestors
 
         //update immediate children (Ids and Names)
-        const immediateChildren = await cat.getImmediateChildren()
+        const immediateChildren = await cat.getImmediateChildren()  //mpath function
         const iChildrenNames = []
         const iChildrenIds = []
 
@@ -119,7 +136,7 @@ categorySchema.statics.crudUpdate = async function () {
         cat.immediateChildrenIds = iChildrenIds
 
         //update all children (Ids and Names)
-        const allChildren = await cat.getAllChildren()
+        const allChildren = await cat.getAllChildren()  //mpath function
         const childrenNames = []
         const childrenIds = []
 

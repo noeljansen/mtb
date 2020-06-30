@@ -19,7 +19,7 @@ router.get('/categories/tree', displayTree)
 router.get('/categories/id/:categoryId', displayById)
 router.get('/categories/', displayAll)
 
-// Get via acestors routes all use the same method. Perhaps there is a better way to set this up?
+// Get via acestors for better SEO
 router.get('/categories/:grandparent/:parent/:child', display)
 router.get('/categories/:parent/:child', display)
 router.get('/categories/:child', display)

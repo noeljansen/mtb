@@ -25,9 +25,8 @@ exports.create = async (req, res) => {
                 })
             }
         }
-
         await category.save()
-        await Category.crudUpdate()
+        await Category.crudUpdate()     //updates the category Tree
 
         //return updated Category with Tree information
         const updatedCat = await Category.findById(category._id)
@@ -131,7 +130,7 @@ exports.update = async (req, res) => {
         await category.save()
 
         //update the whole category tree
-        await Category.crudUpdate()
+        await Category.crudUpdate()     //updates the category Tree
 
         return res.status(200).send()
 
@@ -152,7 +151,7 @@ exports.deleteCategory = async (req, res) => {
         //
         const category = req.category
         await category.remove()
-        await Category.crudUpdate()
+        await Category.crudUpdate()     //updates the category Tree
         return res.status(200).send()
     } catch (e) {
         return res.status(500).send({ error: e.message })

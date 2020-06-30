@@ -14,8 +14,15 @@ const router = new express.Router()
 router.param('advertId', advertById)
 router.param('categoryId', categoryById)
 
-//Multer for image uploads - Note other form fields are added to the Req body
-// First save the image to local storage. It will be uploaded from here to cloudinary and then deleted
+
+/* 
+ multer is used to handle the image uploads.
+
+ It is middleware that uploads the user's files to the '/uploads' directory and saves the file path(s) to the request, along with the rest of the form data.
+ The images are uploaded to cloudinary from the uploads folder. 
+ Once the upload is complete, or if there are errors with the uploads, the files are deleted from the uploads directory.
+ 
+*/
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads')
@@ -24,7 +31,6 @@ var storage = multer.diskStorage({
         cb(null, Date.now() + '-' + file.originalname)
     }
 })
-
 const upload = multer({
     storage: storage,
     limits: {
@@ -55,7 +61,7 @@ router.put('/ads/:advertId/images', userAuth, upload.array('images', 5), advertU
 
 // List Adverts based on Category
 router.get('/c/id/:categoryId', listFromCategory)
-
+// The below routes are better SEO
 router.get('/c/:grandparent/:parent/:child', listFromCategory)
 router.get('/c/:parent/:child', listFromCategory)
 router.get('/c/:child', listFromCategory)

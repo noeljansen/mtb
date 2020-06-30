@@ -99,11 +99,11 @@ const setupDatabase = async () => {
     await new User(superAdminUser).save()
 
     await new Category(catMtb).save()
-    await Category.crudUpdate()
+    await Category.crudUpdate()     //updates the category Tree
     await new Category(catRoad).save()
-    await Category.crudUpdate()
+    await Category.crudUpdate()     //updates the category Tree
     await new Category(catAccessories).save()
-    await Category.crudUpdate()
+    await Category.crudUpdate()     //updates the category Tree
 
     await new Advert(adMtb).save()
     await new Advert(adRoad).save()
