@@ -6,7 +6,8 @@ const ObjectId = mongoose.Types.ObjectId;
 const Advert = require('../models/advert')
 const Category = require('../models/category')
 
-const { uploads, deleteSingle } = require('../utils/cloudinary')
+const { uploads, deleteSingle, clearUploadDirectory } = require('../utils/cloudinary');
+const { nextTick } = require('process');
 
 
 exports.create = async (req, res) => {
@@ -53,6 +54,7 @@ exports.create = async (req, res) => {
         await advert.save()
         return res.status(201).send(advert)
     } catch (e) {
+        clearUploadDirectory(req.files)     // Delete all images from this req from uploads directory if there was an error
         res.status(500).send({ error: e.message })
     }
 }
@@ -78,6 +80,7 @@ exports.displayAll = async (req, res) => {
 
 /*
 Update - Advert
+This uses findOneAndUpdate to perform an atomic update incase an admin and user are updating the advert at the same time.
 For now a user can update their own advert and the update does not need to be approved.
 
 */
@@ -119,11 +122,15 @@ exports.update = async (req, res) => {
 
         //This should be in a try catch block as the update might fail due to errors thrown by mongoose. It will be good to return these errors to the user.
         try {
+            const updateObject = {}
             updates.forEach(update => {
-                advert[update] = req.body[update]
+                //advert[update] = req.body[update]     - Non Atomic
+                updateObject[update] = req.body[update]
             })
-            await advert.save()
-            return res.status(200).send(advert)
+            console.log(`updateObject: ${JSON.stringify(updateObject)}`)
+            const updatedAdvert = await Advert.findOneAndUpdate({ _id: advert._id }, updateObject, { new: true })
+            //await advert.save()   - Non Atomic
+            return res.status(200).send(updatedAdvert)
         } catch (e) {
             return res.status(400).send({ error: e.message })
         }
@@ -201,7 +208,7 @@ exports.addImages = async (req, res) => {
         await advert.save()
         return res.status(200).send(advert)
     } catch (e) {
-        //console.log(`e: ${e}`)
+        clearUploadDirectory(req.files)     // Delete all images from this req from uploads directory if there was an error
         return res.status(500).send({ error: e.message })
     }
 }
