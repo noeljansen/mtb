@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const cloudinary = require('cloudinary').v2
 
 cloudinary.config({
@@ -13,7 +15,7 @@ exports.uploads = (filePath) => {
         cloudinary.uploader.upload(
             filePath,
             //{ folder: "mtb/ads" },
-            { folder: process.env.CLOUDINARY_FOLDER },
+            { folder: process.env.CLOUDINARY_FOLDER, timeout: 60000 },
             function (error, image) {
                 if (error) {
                     return reject('Error uploading image to cloud!')
@@ -40,4 +42,13 @@ exports.deleteSingle = (publicKey) => {
             }
         )
     })
+}
+
+exports.clearUploadDirectory = (files) => {
+    for (const file of files) {
+        const filePath = file.path
+        if (fs.existsSync(filePath))
+            fs.unlinkSync(filePath)
+    }
+    return
 }
