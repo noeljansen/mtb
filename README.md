@@ -6,6 +6,7 @@ The project uses:
     - Express.js
     - MongoDB
     - Mongoose (with Mpath plugin)
+    - Cloudinary Cloud Storage
     - Jest
 
 There is a Postman Collection that can be used for testing. This is located in the project root directory (mtb.postman_collection.json).
